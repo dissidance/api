@@ -11,7 +11,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.use('/users', userIdRouter);
 app.use('/', (req,res) => {
-  res.send({ "message": "Запрашиваемый ресурс не найден" });
+  res.status(404).send({ "message": "Запрашиваемый ресурс не найден" });
 });
 
 app.listen(PORT, () => {

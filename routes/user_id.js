@@ -9,7 +9,7 @@ userIdRouter.get('/:id', (req, res) => {
   if(user) {
     res.send(user);
   } else {
-    res.send({ "message": "Нет пользователя с таким id" });
+    res.status(404).send({ "message": "Нет пользователя с таким id" });
   }
 });
 
