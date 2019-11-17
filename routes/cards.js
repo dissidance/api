@@ -1,8 +1,6 @@
 const cardsRouter = require('express').Router();
-const cards = require('../data/cards.json');
+const getCardsArr = require('../helpers/getCardsArr');
 
-cardsRouter.get('/', (req, res) => {
-  res.send(cards);
-})
+cardsRouter.get('/', getCardsArr);
 
 module.exports = cardsRouter;

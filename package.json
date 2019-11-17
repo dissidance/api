@@ -1,11 +1,12 @@
 {
   "name": "sprint-12",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "training project",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "prettier": "prettier --single-quote --use-tabs --trailing-comma es5 --write \"src/**/*.js\""
   },
   "keywords": [],
   "author": "Max Zhivaev",
@@ -17,6 +18,8 @@
     "nodemon": "^1.19.4"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "prettier": "^1.19.1",
+    "prettier-airbnb-config": "^1.0.0"
   }
 }
