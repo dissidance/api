@@ -1,8 +1,8 @@
 const usersRouter = require('express').Router();
-const users = require('../data/users.json');
+const findUser = require('../helpers/findUser.js');
+const getUsersArr = require('../helpers/getUsersArr');
 
-usersRouter.get('/', (req, res) => {
-  res.send(users);
-})
+usersRouter.get('/', getUsersArr);
+usersRouter.get('/:id', findUser);
 
 module.exports = usersRouter;
