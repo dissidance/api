@@ -37,14 +37,38 @@ module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true })
-    .then((card) => res.send(card))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при отправке данных' }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточки с таким id не существует' });
+      } else {
+        res.send(card);
+      }
+    })
+    .catch((err) => {
+      if (err.message.includes('Cast to ObjectId failed')) {
+        res.status(404).send({ message: 'Карточки с таким id не существует' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла ошибка при отправке данных' });
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId,
     { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true })
-    .then((card) => res.send(card))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при отправке данных' }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточки с таким id не существует' });
+      } else {
+        res.send(card);
+      }
+    })
+    .catch((err) => {
+      if (err.message.includes('Cast to ObjectId failed')) {
+        res.status(404).send({ message: 'Карточки с таким id не существует' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла ошибка при отправке данных' });
+    });
 };
