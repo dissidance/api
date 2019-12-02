@@ -49,9 +49,17 @@ module.exports.updateAvatar = (req, res) => {
   const { _id } = req.user;
   User.findByIdAndUpdate(_id, { avatar }, { runValidators: true, new: true })
     .then((user) => {
-      res.send(user);
+      if (!user) {
+        res.status(404).send({ message: 'Пользователя с таким id не существует' });
+      } else {
+        res.send(user);
+      }
     })
-    .catch(() => {
+    .catch((err) => {
+      if (err.message.includes('Cast to ObjectId failed')) {
+        res.status(404).send({ message: 'Пользователя с таким id не существует' });
+        return;
+      }
       res.status(500).send({ message: 'Данные не прошли валидацию' });
     });
 };
