@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    required: true,
     validate: {
       validator(v) {
         return /^(https?:\/\/)(www\.)?(((\d{1,3}\.){3}\d{1,3})|((\w+)((-\w+)+)?\.\w{2,}))((\.\w{2,4})+)?(:\d{2,5})?((\/+\w+(-\w+)?)+#?)?(\w+\.\w+)?$/.test(v);
