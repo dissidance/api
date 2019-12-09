@@ -1,3 +1,6 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { key } = require('../config');
 const User = require('../models/user');
 
 module.exports.findUser = (req, res) => {
@@ -17,6 +20,22 @@ module.exports.findUser = (req, res) => {
       res.status(500).send({ message: err });
     });
 };
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, key, { expiresIn: '7d' });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+        })
+        .json({ token });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
 
 module.exports.usersArr = (req, res) => {
   User.find({})
@@ -24,11 +43,22 @@ module.exports.usersArr = (req, res) => {
     .catch(() => res.status(500).send({ message: 'Произошла ошибка при запросе списка пользователей' }));
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = async (req, res) => {
+  const {
+    name, about, avatar, password, email,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+  const isExist = await User.findOne({ email });
+  if (isExist) {
+    res.status(401).send({ message: 'Такой пользователь уже существует' });
+    return;
+  }
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => res.send(user.public))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка при создании пользователя' }));
 };
 

@@ -20,8 +20,11 @@ module.exports.removeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Карточки с таким id не существует' });
+      }
+      if (card.owner.toString() === req.user._id) {
+        res.send({ message: 'Карточка удалена' });
       } else {
-        res.send(card);
+        res.status(403).send({ message: 'Недостаточно прав' });
       }
     })
     .catch((err) => {
@@ -40,8 +43,11 @@ module.exports.likeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Карточки с таким id не существует' });
-      } else {
+      }
+      if (card.owner.toString() === req.user._id) {
         res.send(card);
+      } else {
+        res.status(403).send({ message: 'Недостаточно прав' });
       }
     })
     .catch((err) => {
@@ -60,8 +66,11 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Карточки с таким id не существует' });
-      } else {
+      }
+      if (card.owner.toString() === req.user._id) {
         res.send(card);
+      } else {
+        res.status(403).send({ message: 'Недостаточно прав' });
       }
     })
     .catch((err) => {
