@@ -10,11 +10,11 @@ module.exports = (req, res, next) => {
   let payload;
   try {
     payload = jwt.verify(req.cookies.jwt, key);
+    req.user = payload;
+    return next();
   } catch (err) {
     return res
       .status(401)
       .send({ message: 'Необходима авторизация' });
   }
-  req.user = payload;
-  return next();
 };

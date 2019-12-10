@@ -30,7 +30,7 @@ module.exports.login = (req, res) => {
           maxAge: 3600000,
           httpOnly: true,
         })
-        .json({ token });
+        .json({ message: 'Авторизация прошла успешно' });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });
@@ -57,9 +57,9 @@ module.exports.createUser = async (req, res) => {
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
-    }))
+    }, { runValidators: true }))
     .then((user) => res.send(user.public))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при создании пользователя' }));
+    .catch(() => res.status(500).send({ message: 'Данные не прошли валидацию' }));
 };
 
 module.exports.updateUser = (req, res) => {
@@ -67,7 +67,7 @@ module.exports.updateUser = (req, res) => {
   const { _id } = req.user;
   User.findByIdAndUpdate(_id, { name, about }, { runValidators: true, new: true })
     .then((user) => {
-      res.send(user);
+      res.send(user.public);
     })
     .catch(() => {
       res.status(500).send({ message: 'Данные не прошли валидацию' });
@@ -82,7 +82,7 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         res.status(404).send({ message: 'Пользователя с таким id не существует' });
       } else {
-        res.send(user);
+        res.send(user.public);
       }
     })
     .catch((err) => {
