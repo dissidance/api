@@ -1,7 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const routes = require('./routes');
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -13,15 +17,31 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5de24c12c513e1890d0ec703',
-  };
+
+app.use(cookieParser());
+app.post('/signin', login);
+app.post('/signup', createUser);
+app.use(auth);
+app.use('/', routes);
+
+app.use((err, req, res, next) => {
+  if (!err.statusCode) {
+    console.log(err.statusCode);
+    const { statusCode = 500, message } = err;
+    res
+      .status(statusCode)
+      .send({
+        message: statusCode === 500
+          ? 'На сервере произошла ошибка'
+          : message,
+      });
+  }
+  res.status(err.statusCode).send({ message: err.message });
   next();
 });
-app.use('/', routes);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
