@@ -1,83 +1,78 @@
 const Card = require('../models/card');
+const BadRequestError = require('../errors/bad-request-error');
+const AccessError = require('../errors/access-error');
+const NotFoundError = require('../errors/not-found-err');
 
-module.exports.cardsArr = (req, res) => {
+module.exports.cardsArr = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при запросе списка карточек' }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при создании карточки' }));
+    .catch(() => next(new BadRequestError('Данные не прошли валидацию')));
 };
 
-module.exports.removeCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+module.exports.removeCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
-      }
-      if (card.owner.toString() === req.user._id) {
-        res.send({ message: 'Карточка удалена' });
-      } else {
-        res.status(403).send({ message: 'Недостаточно прав' });
+      if (card) {
+        if (card.owner.toString() === req.user._id) {
+          Card.findByIdAndRemove(req.params.cardId)
+            .then(() => res.send({ message: 'Карточка удалена' }))
+            .catch((err) => res.status(404).send({ message: err.message }));
+        } else {
+          throw new AccessError('Недостаточно прав');
+        }
       }
     })
     .catch((err) => {
       if (err.message.includes('Cast to ObjectId failed')) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
-        return;
+        next(new NotFoundError('Карточки с таким id не существует'));
       }
-      res.status(500).send({ message: err });
+      next(err);
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $addToSet: { likes: req.user._id } },
     { new: true })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
+        throw new NotFoundError('Карточки с таким id не существует');
       }
       if (card.owner.toString() === req.user._id) {
         res.send(card);
-      } else {
-        res.status(403).send({ message: 'Недостаточно прав' });
       }
     })
     .catch((err) => {
       if (err.message.includes('Cast to ObjectId failed')) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
-        return;
+        next(new NotFoundError('Карточки с таким id не существует'));
       }
-      res.status(500).send({ message: 'Произошла ошибка при отправке данных' });
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId,
-    { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $pull: { likes: req.user._id } },
     { new: true })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
+        throw new NotFoundError('Карточки с таким id не существует');
       }
       if (card.owner.toString() === req.user._id) {
         res.send(card);
-      } else {
-        res.status(403).send({ message: 'Недостаточно прав' });
       }
     })
     .catch((err) => {
       if (err.message.includes('Cast to ObjectId failed')) {
-        res.status(404).send({ message: 'Карточки с таким id не существует' });
-        return;
+        next(new NotFoundError('Карточки с таким id не существует'));
       }
-      res.status(500).send({ message: 'Произошла ошибка при отправке данных' });
     });
 };

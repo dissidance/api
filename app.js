@@ -27,6 +27,22 @@ app.post('/signup', createUser);
 app.use(auth);
 app.use('/', routes);
 
+app.use((err, req, res, next) => {
+  if (!err.statusCode) {
+    console.log(err.statusCode);
+    const { statusCode = 500, message } = err;
+    res
+      .status(statusCode)
+      .send({
+        message: statusCode === 500
+          ? 'На сервере произошла ошибка'
+          : message,
+      });
+  }
+  res.status(err.statusCode).send({ message: err.message });
+  next();
+});
+
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
