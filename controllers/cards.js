@@ -25,7 +25,7 @@ module.exports.removeCard = (req, res, next) => {
         if (card.owner.toString() === req.user._id) {
           Card.findByIdAndRemove(req.params.cardId)
             .then(() => res.send({ message: 'Карточка удалена' }))
-            .catch((err) => res.status(404).send({ message: err.message }));
+            .catch(() => next(new NotFoundError('Ошибка удаления карточки')));
         } else {
           throw new AccessError('Недостаточно прав');
         }
